@@ -1,10 +1,10 @@
-[![npm version](https://badge.fury.io/js/@justinribeiro%2Flite-youtube.svg)](https://badge.fury.io/js/@justinribeiro%2Flite-youtube) ![min+gzip](https://img.shields.io/badge/min%2Bgzip-2.2kb-blue) ![min+br](https://img.shields.io/badge/min%2Bbr-1.7kb-blue) [![](https://data.jsdelivr.com/v1/package/npm/@justinribeiro/lite-youtube/badge)](https://www.jsdelivr.com/package/npm/@justinribeiro/lite-youtube)
-
-![Statements](https://img.shields.io/badge/statements-98.22%25-brightgreen.svg?style=flat) ![Branches](https://img.shields.io/badge/branches-91.17%25-brightgreen.svg?style=flat) ![Functions](https://img.shields.io/badge/functions-100%25-brightgreen.svg?style=flat) ![Lines](https://img.shields.io/badge/lines-98.22%25-brightgreen.svg?style=flat)
+[![npm version](https://badge.fury.io/js/%40justinribeiro%2Flite-youtube.svg)](https://badge.fury.io/js/%40justinribeiro%2Flite-youtube)
 
 # \<lite-youtube\>
 
-> A web component that renders YouTube embeds faster. The ShadowDom web component version of Paul's [lite-youtube-embed](https://github.com/paulirish/lite-youtube-embed).
+> A web component that displays Vimeo embeds faster. Based on Justin Ribeiro's excellent [\<lite-youtube\>](https://github.com/justinribeiro/lite-youtube), which, in turn, is a Shadow DOM version of Paul's [lite-youtube-embed](https://github.com/paulirish/lite-youtube-embed).
+
+This is basically a rebadge of Justin's component, but for Vimeo.
 
 ## Features
 
@@ -17,11 +17,6 @@
 - Set the `start` attribute to start at a particular place in a video
 - You can set `autoload` to use Intersection Observer to load the iframe when scrolled into view.
 - Loads placeholder image as WebP with a Jpeg fallback
-- _new in v1.1_: Adds `nocookie` attr for use with use youtube-nocookie.com as iframe embed uri
-- _new in v1.2_: Adds `playlistid` for playlist loading interface support
-- _new in v1.3_: Adds `loading=lazy` to image placeholder for more perf with `posterloading` attr if you'd like to use eager
-- _new in v1.4_: Adds `short` attr for enabling experimental YouTube Shorts mobile interaction support. See (example video)[https://www.youtube.com/watch?v=aw7CRQTuRfo] for details.
-- _new in v1.5_: Adds support for nonce attribute via `window.liteYouTubeNonce` for CSP 2/3 support.
 
 ## Install via package manager
 
@@ -31,15 +26,15 @@ available on NPM:
 To install, use your package manager of choice:
 
 ```sh
-npm i @justinribeiro/lite-youtube
+npm i @slightlyoff/lite-vimeo
 # or
-yarn add @justinribeiro/lite-youtube
+yarn add @slightlyoff/lite-vimeo
 ```
 
 After install, import into your project:
 
 ```js
-import '@justinribeiro/lite-youtube';
+import '@slightlyoff/lite-vimeo';
 ```
 
 ## Install with CDN
@@ -47,13 +42,13 @@ import '@justinribeiro/lite-youtube';
 If you want the paste-and-go version, you can simply load it via CDN:
 
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/npm/@justinribeiro/lite-youtube@1.5.0/lite-youtube.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@slightlyoff/lite-vimeo@0.1.2/lite-vimeo.js">
 ```
 
 ## Basic Usage
 
 ```html
-<lite-youtube videoid="guJLfqTFfIw"></lite-youtube>
+<lite-vimeo videoid="364402896"></lite-vimeo>
 ```
 
 ## Basic Usage with Fallback Link
@@ -119,21 +114,20 @@ Setting the YouTube playlistid allows the playlist interface to load on interact
 ## Add Video Title
 
 ```html
-<lite-youtube
+<lite-vimeo
+  videoid="364402896"
   videotitle="This is a video title"
-  videoid="guJLfqTFfIw"
-></lite-youtube>
+></lite-vimeo>
 ```
 
-## Update interface for Locale</h3>
+## Update interface for Locale
 
 ```html
-<lite-youtube
+<lite-vimeo
+  videoid="364402896"
   videoplay="Mirar"
   videotitle="Mis hijos se burlan de mi español"
-  videoid="guJLfqTFfIw"
->
-</lite-youtube>
+></lite-vimeo>
 ```
 
 ## Style It
@@ -148,24 +142,29 @@ Height and Width are responsive in the component.
   }
 </style>
 <div class="styleIt">
-  <lite-youtube videoid="guJLfqTFfIw"></lite-youtube>
+  <lite-vimeo videoid="364402896"></lite-vimeo>
 </div>
 ```
 
-## Enable YouTube Shorts interaction on mobile
-
-See [the example video](https://www.youtube.com/watch?v=aw7CRQTuRfo) of how this feature works for additional details.
+## Set a video start time
 
 ```html
-<lite-youtube videoid="vMImN9gghao" short></lite-youtube>
+<!-- Start at 5 min, 30 seconds -->
+<lite-vimeo videoid="364402896" start="5m30s"></lite-vimeo>
 ```
 
 ## AutoLoad with IntersectionObserver
 
-Uses Intersection Observer if available to automatically load the YouTube iframe when scrolled into view.
+Uses Intersection Observer if available to automatically load the Vimeo iframe when scrolled into view.
 
 ```html
-<lite-youtube videoid="guJLfqTFfIw" autoload> </lite-youtube>
+<lite-vimeo videoid="364402896" autoload></lite-vimeo>
+```
+
+## Auto Play (requires AutoLoad)
+
+```html
+<lite-vimeo videoid="364402896" autoload autoplay></lite-vimeo>
 ```
 
 ## Set a video start time
@@ -222,3 +221,12 @@ The web component fires events to give the ability understand important lifecycl
 | Event Name     | Description                                                      | Returns |
 | -------------- | ---------------------------------------------------------------- | ------- |
 | `liteYoutubeIframeLoaded` | When the iframe is loaded, allowing us of JS API  | `detail: { videoId: this.videoId }` |
+
+| Name         | Description                                                      | Default |
+| ------------ | ---------------------------------------------------------------- | ------- |
+| `videoid`    | The Vimeo videoid                                              | ``      |
+| `videotitle` | The title of the video                                           | `Video` |
+| `videoplay`  | The title of the play button (for translation)                   | `Play`  |
+| `autoload`   | Use Intersection Observer to load iframe when scrolled into view | `false` |
+| `autoplay`   | Video attempts to play automatically if auto-load set and browser allows it | `false` |
+| `start`      | Set the point at which the video should start, in seconds        | `0`     |

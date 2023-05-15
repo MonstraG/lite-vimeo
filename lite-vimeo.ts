@@ -3,7 +3,7 @@
  * The shadowDom / Intersection Observer version of Paul's concept:
  * https://github.com/paulirish/lite-youtube-embed
  *
- * A lightweight YouTube embed. Still should feel the same to the user, just
+ * A lightweight Vimeo embed. Still should feel the same to the user, just
  * MUCH faster to initialize and paint.
  *
  * Thx to these as the inspiration
@@ -14,7 +14,22 @@
  *   https://github.com/ampproject/amphtml/blob/master/extensions/amp-youtube
  *   https://github.com/Daugilas/lazyYT https://github.com/vb/lazyframe
  */
-export class LiteYTEmbed extends HTMLElement {
+
+
+/*
+ * Vimeo example embed markup:
+<iframe src="https://player.vimeo.com/video/364402896"
+  width="640" height="360"
+  frameborder="0"
+  allow="autoplay; fullscreen" allowfullscreen>
+</iframe>
+<p><a href="https://vimeo.com/364402896">
+  Alex Russell - The Mobile Web: MIA</a> from
+    <a href="https://vimeo.com/fronteers">Fronteers</a>
+    on <a href="https://vimeo.com">Vimeo</a>.
+</p>
+ */
+export class LiteVimeoEmbed extends HTMLElement {
   shadowRoot!: ShadowRoot;
   private domRefFrame!: HTMLDivElement;
   private domRefImg!: {
@@ -32,11 +47,11 @@ export class LiteYTEmbed extends HTMLElement {
   }
 
   static get observedAttributes(): string[] {
-    return ['videoid', 'playlistid'];
+    return ['videoid'];
   }
 
   connectedCallback(): void {
-    this.addEventListener('pointerover', LiteYTEmbed.warmConnections, {
+    this.addEventListener('pointerover', LiteVimeoEmbed.warmConnections, {
       once: true,
     });
 
@@ -49,14 +64,6 @@ export class LiteYTEmbed extends HTMLElement {
 
   set videoId(id: string) {
     this.setAttribute('videoid', id);
-  }
-
-  get playlistId(): string {
-    return encodeURIComponent(this.getAttribute('playlistid') || '');
-  }
-
-  set playlistId(id: string) {
-    this.setAttribute('playlistid', id);
   }
 
   get videoTitle(): string {
@@ -76,11 +83,23 @@ export class LiteYTEmbed extends HTMLElement {
   }
 
   get videoStartAt(): string {
-    return this.getAttribute('videoStartAt') || '0';
+    return this.getAttribute('videoPlay') || '0s';
+  }
+
+  set videoStartAt(time: string) {
+    this.setAttribute('videoPlay', time);
   }
 
   get autoLoad(): boolean {
     return this.hasAttribute('autoload');
+  }
+
+  set autoLoad(value: boolean) {
+    if (value) {
+      this.setAttribute('autoload', '');
+    } else {
+      this.removeAttribute('autoload');
+    }
   }
 
   get noCookie(): boolean {
@@ -93,8 +112,8 @@ export class LiteYTEmbed extends HTMLElement {
 
   get posterLoading(): HTMLImageElement['loading'] {
     return (
-      (this.getAttribute('posterloading') as HTMLImageElement['loading']) ||
-      'lazy'
+        (this.getAttribute('posterloading') as HTMLImageElement['loading']) ||
+        'lazy'
     );
   }
 
@@ -106,11 +125,23 @@ export class LiteYTEmbed extends HTMLElement {
     this.setAttribute('params', opts);
   }
 
+  get autoPlay(): boolean {
+    return this.hasAttribute('autoplay');
+  }
+
+  set autoPlay(value: boolean) {
+    if (value) {
+      this.setAttribute('autoplay', 'autoplay');
+    } else {
+      this.removeAttribute('autoplay');
+    }
+  }
+
   /**
    * Define our shadowDOM for the component
    */
   private setupDom(): void {
-    const shadowDom = this.attachShadow({ mode: 'open' });
+    const shadowDom = this.attachShadow({mode: 'open'});
     let nonce = '';
     if (window.liteYouTubeNonce) {
       nonce = `nonce="${window.liteYouTubeNonce}"`;
@@ -151,31 +182,40 @@ export class LiteYTEmbed extends HTMLElement {
           display: block;
           position: absolute;
           top: 0;
-          background-image: linear-gradient(180deg, #111 -20%, transparent 90%);
+          background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAADGCAYAAAAT+OqFAAAAdklEQVQoz42QQQ7AIAgEF/T/D+kbq/RWAlnQyyazA4aoAB4FsBSA/bFjuF1EOL7VbrIrBuusmrt4ZZORfb6ehbWdnRHEIiITaEUKa5EJqUakRSaEYBJSCY2dEstQY7AuxahwXFrvZmWl2rh4JZ07z9dLtesfNj5q0FU3A5ObbwAAAABJRU5ErkJggg==);
+          background-position: top;
+          background-repeat: repeat-x;
           height: 60px;
+          padding-bottom: 50px;
           width: 100%;
+          transition: all 0.2s cubic-bezier(0, 0, 0.2, 1);
           z-index: 1;
         }
-
-        #playButton {
-          width: 68px;
-          height: 48px;
-          background-color: transparent;
-          background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 68 48"><path d="M66.52 7.74c-.78-2.93-2.49-5.41-5.42-6.19C55.79.13 34 0 34 0S12.21.13 6.9 1.55c-2.93.78-4.63 3.26-5.42 6.19C.06 13.05 0 24 0 24s.06 10.95 1.48 16.26c.78 2.93 2.49 5.41 5.42 6.19C12.21 47.87 34 48 34 48s21.79-.13 27.1-1.55c2.93-.78 4.64-3.26 5.42-6.19C67.94 34.95 68 24 68 24s-.06-10.95-1.48-16.26z" fill="red"/><path d="M45 24 27 14v20" fill="white"/></svg>');
+        /* play button */
+        .lvo-playbtn {
+          width: 70px;
+          height: 46px;
+          background-color: #212121;
           z-index: 1;
+          opacity: 0.8;
+          border-radius: 10%;
+          transition: all 0.2s cubic-bezier(0, 0, 0.2, 1);
           border: 0;
           border-radius: inherit;
         }
-
-        #playButton:before {
+        #frame:hover .lvo-playbtn {
+          background-color: rgb(98, 175, 237);
+          opacity: 1;
+        }
+        /* play button triangle */
+        .lvo-playbtn:before {
           content: '';
           border-style: solid;
           border-width: 11px 0 11px 19px;
           border-color: transparent transparent transparent #fff;
         }
-
-        #playButton,
-        #playButton:before {
+        .lvo-playbtn,
+        .lvo-playbtn:before {
           position: absolute;
           top: 50%;
           left: 50%;
@@ -184,12 +224,12 @@ export class LiteYTEmbed extends HTMLElement {
         }
 
         /* Post-click styles */
-        .activated {
+        .lvo-activated {
           cursor: unset;
         }
 
-        #frame.activated::before,
-        #frame.activated > #playButton {
+        #frame.lvo-activated::before,
+        .lvo-activated .lvo-playbtn {
           display: none;
         }
       </style>
@@ -197,9 +237,14 @@ export class LiteYTEmbed extends HTMLElement {
         <picture>
           <source id="webpPlaceholder" type="image/webp">
           <source id="jpegPlaceholder" type="image/jpeg">
-          <img id="fallbackPlaceholder" referrerpolicy="origin" loading="lazy">
+         <img id="fallbackPlaceholder"
+               referrerpolicy="origin"
+               width="1100"
+               height="619"
+               decoding="async"
+               loading="lazy">
         </picture>
-        <button id="playButton"></button>
+        <button class="lvo-playbtn"></button>
       </div>
     `;
     this.domRefFrame = shadowDom.querySelector<HTMLDivElement>('#frame')!;
@@ -208,7 +253,9 @@ export class LiteYTEmbed extends HTMLElement {
       webp: shadowDom.querySelector('#webpPlaceholder')!,
       jpeg: shadowDom.querySelector('#jpegPlaceholder')!,
     };
-    this.domRefPlayButton = shadowDom.querySelector('#playButton')!;
+    this.domRefPlayButton = shadowDom.querySelector<HTMLButtonElement>(
+      '.lty-playbtn',
+    )!;
   }
 
   /**
@@ -223,7 +270,7 @@ export class LiteYTEmbed extends HTMLElement {
     );
     this.setAttribute('title', `${this.videoPlay}: ${this.videoTitle}`);
 
-    if (this.autoLoad || this.isYouTubeShort()) {
+    if (this.autoLoad) {
       this.initIntersectionObserver();
     }
   }
@@ -240,16 +287,13 @@ export class LiteYTEmbed extends HTMLElement {
     newVal: unknown
   ): void {
     switch (name) {
-      case 'videoid':
-      case 'playlistid':
-      case 'videoTitle':
-      case 'videoPlay': {
+      case 'videoid': {
         if (oldVal !== newVal) {
           this.setupComponent();
 
           // if we have a previous iframe, remove it and the activated class
-          if (this.domRefFrame.classList.contains('activated')) {
-            this.domRefFrame.classList.remove('activated');
+          if (this.domRefFrame.classList.contains('lvo-activated')) {
+            this.domRefFrame.classList.remove('lvo-activated');
             this.shadowRoot.querySelector('iframe')!.remove();
             this.isIframeLoaded = false;
           }
@@ -266,40 +310,40 @@ export class LiteYTEmbed extends HTMLElement {
    * @param {boolean} isIntersectionObserver
    */
   private addIframe(isIntersectionObserver = false): void {
-    if (!this.isIframeLoaded) {
-      // Don't autoplay the intersection observer injection, it's weird
-      let autoplay = isIntersectionObserver ? 0 : 1;
-      const wantsNoCookie = this.noCookie ? '-nocookie' : '';
-      let embedTarget;
-      if (this.playlistId) {
-        embedTarget = `?listType=playlist&list=${this.playlistId}&`;
-      } else {
-        embedTarget = `${this.videoId}?`;
-      }
+    if (!this.iframeLoaded) {
+      /**
+       * Vimeo example embed markup:
+       *
+       *  <iframe src="https://player.vimeo.com/video/364402896#t=1m3s"
+       *    width="640" height="360"
+       *    frameborder="0"
+       *    allow="autoplay; fullscreen" allowfullscreen>
+       *  </iframe>
+       */
+      // FIXME: add a setting for autoplay
+      const apValue = ((this.autoLoad && this.autoPlay) || (!this.autoLoad)) ?
+                        "autoplay=1" : "";
+      const srcUrl = new URL(
+        `/video/${this.videoId}?${apValue}&#t=${this.videoStartAt}`,
+        "https://player.vimeo.com/"
+      );
 
-      // Oh wait, you're a YouTube short, so let's try to make you more workable
-      if (this.isYouTubeShort()) {
-        this.params = `loop=1&mute=1&modestbranding=1&playsinline=1&rel=0&enablejsapi=1&playlist=${this.videoId}`;
-        autoplay = 1;
-      }
-
+      // TODO: construct src value w/ URL constructor
       const iframeHTML = `
-<iframe frameborder="0" title="${this.videoTitle}"
-  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
-  src="https://www.youtube${wantsNoCookie}.com/embed/${embedTarget}autoplay=${autoplay}&${this.params}"
-></iframe>`;
+<iframe frameborder="0"
+  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+  allowfullscreen src="${srcUrl}"></iframe>`;
       this.domRefFrame.insertAdjacentHTML('beforeend', iframeHTML);
-      this.domRefFrame.classList.add('activated');
+      this.domRefFrame.classList.add('lvo-activated');
       this.isIframeLoaded = true;
-      this.attemptShortAutoPlay();
       this.dispatchEvent(
-        new CustomEvent('liteYoutubeIframeLoaded', {
-          detail: {
-            videoId: this.videoId,
-          },
-          bubbles: true,
-          cancelable: true,
-        })
+          new CustomEvent('liteYoutubeIframeLoaded', {
+            detail: {
+              videoId: this.videoId,
+            },
+            bubbles: true,
+            cancelable: true,
+          })
       );
     }
   }
@@ -307,9 +351,28 @@ export class LiteYTEmbed extends HTMLElement {
   /**
    * Setup the placeholder image for the component
    */
-  private initImagePlaceholder(): void {
-    const posterUrlWebp = `https://i.ytimg.com/vi_webp/${this.videoId}/${this.posterQuality}.webp`;
-    const posterUrlJpeg = `https://i.ytimg.com/vi/${this.videoId}/${this.posterQuality}.jpg`;
+  private async initImagePlaceholder(): Promise<any> {
+    // TODO(slightlyoff): TODO: cache API responses
+
+    // we don't know which image type to preload, so warm the connection
+    LiteVimeoEmbed.addPrefetch('preconnect', 'https://i.vimeocdn.com/');
+
+    // API is the video-id based
+    // http://vimeo.com/api/v2/video/364402896.json
+    const apiUrl = `https://vimeo.com/api/v2/video/${this.videoId}.json`;
+
+    // Now fetch the JSON that locates our placeholder from vimeo's JSON API
+    const apiResponse = (await (await fetch(apiUrl)).json())[0];
+
+    // Extract the image id, e.g. 819916979, from a URL like:
+    // thumbnail_large: "https://i.vimeocdn.com/video/819916979_640.jpg"
+    const tnLarge = apiResponse.thumbnail_large;
+    const imgId = (tnLarge.substr(tnLarge.lastIndexOf("/") + 1)).split("_")[0];
+
+    const posterUrlWebp =
+          `https://i.vimeocdn.com/video/${imgId}.webp?mw=1100&mh=619&q=${this.posterQuality}`;
+    const posterUrlJpeg =
+          `https://i.vimeocdn.com/video/${imgId}.jpg?mw=1100&mh=619&q=${this.posterQuality}`;
     this.domRefImg.fallback.loading = this.posterLoading;
     this.domRefImg.webp.srcset = posterUrlWebp;
     this.domRefImg.jpeg.srcset = posterUrlJpeg;
@@ -334,55 +397,21 @@ export class LiteYTEmbed extends HTMLElement {
       threshold: 0,
     };
 
-    const observer = new IntersectionObserver((entries, observer) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting && !this.isIframeLoaded) {
-          LiteYTEmbed.warmConnections();
-          this.addIframe(true);
-          observer.unobserve(this);
-        }
-      });
-    }, options);
+      const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && !this.isIframeLoaded) {
+            LiteVimeoEmbed.warmConnections();
+            this.addIframe();
+            observer.unobserve(this);
+          }
+        });
+      }, options);
 
-    observer.observe(this);
-  }
-
-  /**
-   * This is a terrible hack to attempt to get YouTube Short-like autoplay on
-   * mobile viewports. It's this way because:
-   * 1. YouTube's Iframe embed does not offer determinism when loading
-   * 2. Attempting to use onYouTubeIframeAPIReady() does not work in 99% of
-   *    cases
-   * 3. You can _technically_ load the Frame API library and do more advanced
-   *    things, but I don't want to burn the thread of the wire with its
-   *    shenanigans since this an edge case.
-   * @private
-   */
-  private attemptShortAutoPlay() {
-    if (this.isYouTubeShort()) {
-      setTimeout(() => {
-        this.shadowRoot
-          .querySelector('iframe')
-          ?.contentWindow?.postMessage(
-            '{"event":"command","func":"' + 'playVideo' + '","args":""}',
-            '*'
-          );
-        // for youtube video recording demo
-      }, 2000);
+      observer.observe(this);
     }
   }
 
-  /**
-   * A hacky attr check and viewport peek to see if we're going to try to enable
-   * a more friendly YouTube Short style loading
-   * @returns boolean
-   */
-  private isYouTubeShort(): boolean {
-    return (
-      this.getAttribute('short') === '' &&
-      window.matchMedia('(max-width: 40em)').matches
-    );
-  }
+  private static preconnected = false;
 
   /**
    * Add a <link rel={preload | preconnect} ...> to the head
@@ -390,10 +419,13 @@ export class LiteYTEmbed extends HTMLElement {
    * @param {string} url
    * @param {string} as
    */
-  private static addPrefetch(kind: string, url: string): void {
+  private static addPrefetch(kind: string, url: string, as?: string): void {
     const linkElem = document.createElement('link');
     linkElem.rel = kind;
     linkElem.href = url;
+    if (as) {
+      linkElem.as = as;
+    }
     linkElem.crossOrigin = 'true';
     document.head.append(linkElem);
   }
@@ -409,42 +441,24 @@ export class LiteYTEmbed extends HTMLElement {
    * Isolation and split caches adding serious complexity.
    */
   private static warmConnections(): void {
-    if (LiteYTEmbed.isPreconnected || window.liteYouTubeIsPreconnected) return;
-    // we don't know which image type to preload, so warm the connection
-    LiteYTEmbed.addPrefetch('preconnect', 'https://i.ytimg.com/');
+    if (LiteVimeoEmbed.preconnected) return;
+    // Host that Vimeo uses to serve JS needed by player
+    LiteVimeoEmbed.addPrefetch('preconnect', 'https://f.vimeocdn.com');
 
-    // Host that YT uses to serve JS needed by player, per amp-youtube
-    LiteYTEmbed.addPrefetch('preconnect', 'https://s.ytimg.com');
+    // The iframe document comes from player.vimeo.com
+    LiteVimeoEmbed.addPrefetch('preconnect', 'https://player.vimeo.com');
 
-    // The iframe document and most of its subresources come right off
-    // youtube.com
-    LiteYTEmbed.addPrefetch('preconnect', 'https://www.youtube.com');
+    // Image for placeholder comes from i.vimeocdn.com
+    LiteVimeoEmbed.addPrefetch('preconnect', 'https://i.vimeocdn.com');
 
-    // The botguard script is fetched off from google.com
-    LiteYTEmbed.addPrefetch('preconnect', 'https://www.google.com');
-
-    // TODO: Not certain if these ad related domains are in the critical path.
-    // Could verify with domain-specific throttling.
-    LiteYTEmbed.addPrefetch(
-      'preconnect',
-      'https://googleads.g.doubleclick.net'
-    );
-    LiteYTEmbed.addPrefetch('preconnect', 'https://static.doubleclick.net');
-    LiteYTEmbed.isPreconnected = true;
-
-    // multiple embeds in the same page don't check for each other
-    window.liteYouTubeIsPreconnected = true;
+    LiteVimeoEmbed.preconnected = true;
   }
 }
 // Register custom element
-customElements.define('lite-youtube', LiteYTEmbed);
+customElements.define('lite-vimeo', LiteVimeoEmbed);
 
 declare global {
   interface HTMLElementTagNameMap {
-    'lite-youtube': LiteYTEmbed;
-  }
-  interface Window {
-    liteYouTubeNonce: string;
-    liteYouTubeIsPreconnected: boolean;
+    'lite-vimeo': LiteVimeoEmbed;
   }
 }

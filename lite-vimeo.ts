@@ -310,7 +310,7 @@ export class LiteVimeoEmbed extends HTMLElement {
    * @param {boolean} isIntersectionObserver
    */
   private addIframe(isIntersectionObserver = false): void {
-    if (!this.iframeLoaded) {
+    if (!this.isIframeLoaded) {
       /**
        * Vimeo example embed markup:
        *
@@ -409,7 +409,6 @@ export class LiteVimeoEmbed extends HTMLElement {
 
       observer.observe(this);
     }
-  }
 
   private static preconnected = false;
 
@@ -460,5 +459,8 @@ customElements.define('lite-vimeo', LiteVimeoEmbed);
 declare global {
   interface HTMLElementTagNameMap {
     'lite-vimeo': LiteVimeoEmbed;
+  }
+  interface Window {
+    liteYouTubeNonce?: string;
   }
 }
